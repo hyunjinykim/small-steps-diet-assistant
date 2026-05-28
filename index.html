@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f4ed" />
+    <title>Small Steps Diet Assistant</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Small steps</p>
+          <h1>Diet Assistant</h1>
+        </div>
+        <button class="icon-button" id="resetDemo" type="button" aria-label="Reset app data" title="Reset app data">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h10a6 6 0 1 1-5.66 8" />
+            <path d="M4 7l4-4" />
+            <path d="M4 7l4 4" />
+          </svg>
+        </button>
+      </header>
+
+      <main>
+        <section class="status-grid" aria-label="Weight progress">
+          <div class="progress-card">
+            <div class="progress-visual" aria-hidden="true">
+              <svg viewBox="0 0 120 120">
+                <circle class="track" cx="60" cy="60" r="48"></circle>
+                <circle class="progress-ring" id="progressRing" cx="60" cy="60" r="48"></circle>
+                <path class="leaf" d="M62 43c13-16 29-13 34-10-1 15-12 28-29 27 6 5 11 11 15 19" />
+                <path class="stem" d="M58 78c1-18-6-28-19-36-7 15 1 31 18 35" />
+              </svg>
+            </div>
+            <div>
+              <p class="label">Current</p>
+              <p class="big-number"><span id="currentWeight">80</span> kg</p>
+              <p class="muted">Goal: <span id="goalWeight">60</span> kg</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <p class="label">Next milestone</p>
+            <p class="metric" id="nextMilestone">78 kg</p>
+            <p class="muted" id="milestoneNote">Start with the next 2 kg.</p>
+          </div>
+
+          <div class="metric-card">
+            <p class="label">Today</p>
+            <p class="metric" id="todayScore">0 wins</p>
+            <p class="muted" id="todayNudge">One pause counts.</p>
+          </div>
+        </section>
+
+        <nav class="tabbar" aria-label="App sections">
+          <button class="tab active" type="button" data-tab="today">Today</button>
+          <button class="tab" type="button" data-tab="log">Log</button>
+          <button class="tab" type="button" data-tab="insights">Insights</button>
+          <button class="tab" type="button" data-tab="coach">AI Coach</button>
+        </nav>
+
+        <section class="panel active" id="today" aria-labelledby="todayTitle">
+          <div class="section-heading">
+            <h2 id="todayTitle">Today’s tiny plan</h2>
+            <span class="date-chip" id="todayDate"></span>
+          </div>
+
+          <div class="step-list">
+            <label class="check-row">
+              <input type="checkbox" data-habit="pause" />
+              <span>Pause before stress eating</span>
+            </label>
+            <label class="check-row">
+              <input type="checkbox" data-habit="water" />
+              <span>Drink water first</span>
+            </label>
+            <label class="check-row">
+              <input type="checkbox" data-habit="protein" />
+              <span>Add protein to one meal</span>
+            </label>
+            <label class="check-row">
+              <input type="checkbox" data-habit="walk" />
+              <span>Walk for 10 minutes</span>
+            </label>
+          </div>
+
+          <div class="pause-box">
+            <div>
+              <p class="label">When stress says “eat now”</p>
+              <p class="pause-line" id="pauseLine">Am I hungry, stressed, bored, or tired?</p>
+            </div>
+            <button class="primary" id="newPause" type="button">New pause</button>
+          </div>
+
+          <div class="quick-links" aria-label="Nearby helpers">
+            <a href="https://www.google.com/maps/search/walking+park+near+me" target="_blank" rel="noreferrer">Walk nearby</a>
+            <a href="https://www.google.com/maps/search/healthy+restaurant+near+me" target="_blank" rel="noreferrer">Healthy food</a>
+            <a href="https://www.google.com/maps/search/grocery+store+near+me" target="_blank" rel="noreferrer">Groceries</a>
+          </div>
+        </section>
+
+        <section class="panel" id="log" aria-labelledby="logTitle">
+          <div class="section-heading">
+            <h2 id="logTitle">Log something</h2>
+            <button class="secondary" id="exportData" type="button">Export</button>
+          </div>
+
+          <form class="form-grid" id="weightForm">
+            <label>
+              Weight today
+              <input id="weightInput" type="number" min="30" max="250" step="0.1" inputmode="decimal" placeholder="80.0" />
+            </label>
+            <button class="primary" type="submit">Save weight</button>
+          </form>
+
+          <form class="log-card" id="mealForm">
+            <label>
+              Food or drink
+              <input id="mealName" type="text" placeholder="rice bowl, snack, coffee..." />
+            </label>
+            <div class="two-col">
+              <label>
+                Hunger
+                <input id="mealHunger" type="range" min="0" max="10" value="5" />
+              </label>
+              <label>
+                Stress
+                <input id="mealStress" type="range" min="0" max="10" value="5" />
+              </label>
+            </div>
+            <label>
+              Note
+              <input id="mealNote" type="text" placeholder="what was happening?" />
+            </label>
+            <label class="check-row compact">
+              <input id="mealProtein" type="checkbox" />
+              <span>Included protein</span>
+            </label>
+            <button class="primary" type="submit">Save meal</button>
+          </form>
+
+          <form class="log-card accent" id="urgeForm">
+            <label>
+              Stress urge
+              <input id="urgeReason" type="text" placeholder="work stress, boredom, late night..." />
+            </label>
+            <label>
+              What I tried instead
+              <select id="urgeAction">
+                <option>waited 10 minutes</option>
+                <option>drank water</option>
+                <option>walked</option>
+                <option>texted someone</option>
+                <option>ate slowly anyway</option>
+              </select>
+            </label>
+            <button class="primary" type="submit">Save urge</button>
+          </form>
+        </section>
+
+        <section class="panel" id="insights" aria-labelledby="insightsTitle">
+          <div class="section-heading">
+            <h2 id="insightsTitle">Seven-day view</h2>
+          </div>
+          <div class="insight-grid">
+            <div class="metric-card">
+              <p class="label">Meals logged</p>
+              <p class="metric" id="mealCount">0</p>
+            </div>
+            <div class="metric-card">
+              <p class="label">Stress urges</p>
+              <p class="metric" id="urgeCount">0</p>
+            </div>
+            <div class="metric-card">
+              <p class="label">Protein meals</p>
+              <p class="metric" id="proteinCount">0</p>
+            </div>
+            <div class="metric-card">
+              <p class="label">Weight change</p>
+              <p class="metric" id="weightChange">0 kg</p>
+            </div>
+          </div>
+          <ol class="timeline" id="timeline"></ol>
+        </section>
+
+        <section class="panel" id="coach" aria-labelledby="coachTitle">
+          <div class="section-heading">
+            <h2 id="coachTitle">AI coach</h2>
+            <button class="secondary" id="copyPrompt" type="button">Copy</button>
+          </div>
+          <textarea id="coachPrompt" rows="12" spellcheck="true"></textarea>
+          <div class="quick-links">
+            <a href="https://gemini.google.com/" target="_blank" rel="noreferrer">Open Gemini</a>
+            <a href="https://chatgpt.com/" target="_blank" rel="noreferrer">Open ChatGPT</a>
+            <a href="https://claude.ai/" target="_blank" rel="noreferrer">Open Claude</a>
+          </div>
+          <p class="fine-print">For medical conditions, medications, eating disorders, pregnancy, or severe symptoms, use a clinician instead of an app.</p>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
