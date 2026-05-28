@@ -1,4 +1,7 @@
+import { firebaseConfig, hasFirebaseConfig } from "./firebase-config.js";
+
 const STORAGE_KEY = "small-steps-diet-assistant-v1";
+const FIREBASE_VERSION = "10.12.5";
 
 const defaultState = {
   profile: {
@@ -23,6 +26,15 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
 let state = loadState();
+let sync = {
+  auth: null,
+  db: null,
+  user: null,
+  unsubscribe: null,
+  applyingRemote: false,
+  saveTimer: null,
+  modules: null
+};
 
 function loadState() {
   try {
@@ -45,6 +57,7 @@ function mergeState(base, stored) {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  queueCloudSave();
 }
 
 function todayKey() {
@@ -65,6 +78,12 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   window.setTimeout(() => toast.classList.remove("show"), 1800);
+}
+
+function setSyncStatus(message, connected = false) {
+  $("#syncStatus").textContent = message;
+  $("#signInButton").hidden = connected;
+  $("#signOutButton").hidden = !connected;
 }
 
 function addLog(type, data) {
@@ -187,6 +206,112 @@ Please give me:
 Keep it practical, non-shaming, and focused on small choices. Do not give medical advice.`;
 }
 
+function queueCloudSave() {
+  if (!sync.db || !sync.user || sync.applyingRemote) return;
+  window.clearTimeout(sync.saveTimer);
+  sync.saveTimer = window.setTimeout(() => {
+    saveCloudState().catch(() => setSyncStatus("Sync paused. Check Firebase setup."));
+  }, 350);
+}
+
+async function saveCloudState() {
+  if (!sync.db || !sync.user || !sync.modules) return;
+  const { doc, setDoc, serverTimestamp } = sync.modules.firestore;
+  await setDoc(
+    doc(sync.db, "users", sync.user.uid, "app", "state"),
+    {
+      state,
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+}
+
+async function setupFirebase() {
+  if (!hasFirebaseConfig()) {
+    setSyncStatus("Add Firebase config to turn on automatic sharing.");
+    return;
+  }
+
+  try {
+    const [appModule, authModule, firestoreModule] = await Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),
+      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)
+    ]);
+
+    const app = appModule.initializeApp(firebaseConfig);
+    sync.auth = authModule.getAuth(app);
+    sync.db = firestoreModule.getFirestore(app);
+    sync.modules = { auth: authModule, firestore: firestoreModule };
+
+    authModule.onAuthStateChanged(sync.auth, (user) => {
+      if (user) {
+        sync.user = user;
+        setSyncStatus(`Synced as ${user.displayName || user.email || "Google account"}`, true);
+        listenToCloudState();
+      } else {
+        sync.user = null;
+        if (sync.unsubscribe) sync.unsubscribe();
+        sync.unsubscribe = null;
+        setSyncStatus("Ready to sync with Google.");
+      }
+    });
+  } catch {
+    setSyncStatus("Firebase could not load. Local mode is still working.");
+  }
+}
+
+function listenToCloudState() {
+  if (sync.unsubscribe) sync.unsubscribe();
+  const { doc, onSnapshot } = sync.modules.firestore;
+  const ref = doc(sync.db, "users", sync.user.uid, "app", "state");
+
+  sync.unsubscribe = onSnapshot(
+    ref,
+    (snapshot) => {
+      const remote = snapshot.data()?.state;
+      if (remote) {
+        sync.applyingRemote = true;
+        state = mergeState(defaultState, remote);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        sync.applyingRemote = false;
+        render();
+      } else {
+        saveCloudState().catch(() => setSyncStatus("Sync paused. Check Firebase setup.", true));
+      }
+    },
+    () => setSyncStatus("Sync paused. Check Firebase rules.", true)
+  );
+}
+
+async function signIn() {
+  if (!hasFirebaseConfig()) {
+    showToast("Add Firebase config first.");
+    return;
+  }
+
+  if (!sync.auth) {
+    setSyncStatus("Preparing Firebase...");
+    await setupFirebase();
+  }
+
+  if (!sync.auth || !sync.modules) return;
+
+  try {
+    const provider = new sync.modules.auth.GoogleAuthProvider();
+    await sync.modules.auth.signInWithPopup(sync.auth, provider);
+  } catch {
+    showToast("Google sign-in did not finish.");
+  }
+}
+
+async function signOut() {
+  if (!sync.auth || !sync.modules) return;
+  await sync.modules.auth.signOut(sync.auth);
+  showToast("Signed out.");
+}
+
 function setActiveTab(tabId) {
   $$(".tab").forEach((button) => button.classList.toggle("active", button.dataset.tab === tabId));
   $$(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === tabId));
@@ -276,7 +401,11 @@ function bindEvents() {
     render();
     showToast("Reset complete.");
   });
+
+  $("#signInButton").addEventListener("click", signIn);
+  $("#signOutButton").addEventListener("click", signOut);
 }
 
 bindEvents();
 render();
+setupFirebase();

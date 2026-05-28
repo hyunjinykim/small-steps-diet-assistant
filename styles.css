@@ -99,7 +99,8 @@ h2 {
 .metric-card,
 .panel,
 .log-card,
-.pause-box {
+.pause-box,
+.sync-strip {
   border: 1px solid rgba(23, 33, 29, 0.08);
   background: rgba(255, 253, 248, 0.9);
   box-shadow: var(--shadow);
@@ -185,6 +186,29 @@ h2 {
 .fine-print {
   margin-bottom: 0;
   line-height: 1.45;
+}
+
+.sync-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.sync-strip p:last-child {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .tabbar {
@@ -441,6 +465,19 @@ input[type="range"] {
   .form-grid,
   .two-col {
     grid-template-columns: 1fr;
+  }
+
+  .sync-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sync-actions {
+    justify-content: stretch;
+  }
+
+  .sync-actions button {
+    flex: 1 1 140px;
   }
 
   .progress-card {

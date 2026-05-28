@@ -55,6 +55,17 @@
           </div>
         </section>
 
+        <section class="sync-strip" aria-label="Cloud sync">
+          <div>
+            <p class="label">Cloud sync</p>
+            <p id="syncStatus">Not connected yet</p>
+          </div>
+          <div class="sync-actions">
+            <button class="secondary" id="signOutButton" type="button" hidden>Sign out</button>
+            <button class="primary" id="signInButton" type="button">Sign in with Google</button>
+          </div>
+        </section>
+
         <nav class="tabbar" aria-label="App sections">
           <button class="tab active" type="button" data-tab="today">Today</button>
           <button class="tab" type="button" data-tab="log">Log</button>
@@ -96,9 +107,9 @@
           </div>
 
           <div class="quick-links" aria-label="Nearby helpers">
-            <a href="https://www.google.com/maps/search/walking+park+near+me" target="_blank" rel="noreferrer">Walk nearby</a>
-            <a href="https://www.google.com/maps/search/healthy+restaurant+near+me" target="_blank" rel="noreferrer">Healthy food</a>
-            <a href="https://www.google.com/maps/search/grocery+store+near+me" target="_blank" rel="noreferrer">Groceries</a>
+            <a href="https://map.naver.com/p/search/%EC%82%B0%EC%B1%85%EB%A1%9C" target="_blank" rel="noreferrer">Walk nearby</a>
+            <a href="https://map.naver.com/p/search/%EA%B1%B4%EA%B0%95%ED%95%9C%20%EC%8B%9D%EB%8B%B9" target="_blank" rel="noreferrer">Healthy food</a>
+            <a href="https://map.naver.com/p/search/%EB%A7%88%ED%8A%B8" target="_blank" rel="noreferrer">Groceries</a>
           </div>
         </section>
 
@@ -203,6 +214,6 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
